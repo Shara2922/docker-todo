@@ -21,10 +21,12 @@ jobs:
           echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           echo "StrictHostKeyChecking no" >> ~/.ssh/config
+          ssh-keyscan github.com >> ~/.ssh/known_hosts  # Add GitHub to known hosts
+
       # Step 3: Deploy and manage code on EC2
       - name: Deploy to EC2
         run: |
-          ssh ubuntu@3.84.41.200 << 'EOF'
+          ssh -i ~/.ssh/id_ed25519 ubuntu@3.84.41.200 << 'EOF'
             # Ensure the repo is present or clone it
             if [ ! -d "/home/ubuntu/docker-todo" ]; then
               git clone git@github.com:Shara2922/docker-todo.git /home/ubuntu/docker-todo
@@ -32,6 +34,7 @@ jobs:
 
             # Always pull the latest code before proceeding
             cd /home/ubuntu/docker-todo
+            export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519"  # Ensure Git uses correct SSH key
             git pull origin main
 
             # Ensure Docker has permission for the current user
