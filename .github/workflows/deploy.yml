@@ -26,7 +26,7 @@ jobs:
       # Step 3: Deploy and manage code on EC2
       - name: Deploy to EC2
         run: |
-          ssh -i ~/.ssh/id_ed25519 ubuntu@3.84.41.200 << 'EOF'
+          ssh -i “/Users/shara/Documents/aws_key/netflix_key.pem” ubuntu@3.84.41.200 << 'EOF'
             # Ensure the repo is present or clone it
             if [ ! -d "/home/ubuntu/docker-todo" ]; then
               git clone https://github.com/Shara2922/docker-todo.git /home/ubuntu/docker-todo
