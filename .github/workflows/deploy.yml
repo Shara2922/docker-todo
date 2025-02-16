@@ -18,8 +18,8 @@ jobs:
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           echo "StrictHostKeyChecking no" >> ~/.ssh/config
           ssh-keyscan github.com >> ~/.ssh/known_hosts
 
@@ -34,7 +34,7 @@ jobs:
 
             # Always pull the latest code before proceeding
             cd /home/ubuntu/docker-todo
-            export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519"
+            export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_rsa"
             git pull origin main
 
             # Ensure Docker permissions are correct
