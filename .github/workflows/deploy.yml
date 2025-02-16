@@ -18,10 +18,10 @@ jobs:
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           echo "StrictHostKeyChecking no" >> ~/.ssh/config
-          ssh-keyscan github.com >> ~/.ssh/known_hosts  # Add GitHub to known hosts
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
 
       # Step 3: Deploy and manage code on EC2
       - name: Deploy to EC2
@@ -29,23 +29,22 @@ jobs:
           ssh -i ~/.ssh/id_ed25519 ubuntu@3.84.41.200 << 'EOF'
             # Ensure the repo is present or clone it
             if [ ! -d "/home/ubuntu/docker-todo" ]; then
-              git clone git@github.com:Shara2922/docker-todo.git /home/ubuntu/docker-todo
+              git clone https://github.com/Shara2922/docker-todo.git /home/ubuntu/docker-todo
             fi
 
             # Always pull the latest code before proceeding
             cd /home/ubuntu/docker-todo
-            export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519"  # Ensure Git uses correct SSH key
+            export GIT_SSH_COMMAND="ssh -i ~/.ssh/id_ed25519"
             git pull origin main
 
-            # Ensure Docker has permission for the current user
-            sudo chmod 666 /var/run/docker.sock
+            # Ensure Docker permissions are correct
+            sudo usermod -aG docker ubuntu
 
             # Rebuild the Docker image with the latest changes
             sudo docker build -t todo-list-app .
 
-            # Stop and remove the old container if it's running
-            sudo docker stop todo-list-app || true
-            sudo docker rm todo-list-app || true
+            # Stop and remove any existing container
+            sudo docker rm -f todo-list-app || true
 
             # Run the new container with updated code
             sudo docker run -d -p 80:3000 --name todo-list-app todo-list-app
